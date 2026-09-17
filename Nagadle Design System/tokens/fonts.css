@@ -1,0 +1,6 @@
+/* Nagadle webfont — M PLUS Rounded 1c (Google Fonts).
+   The source brand kit specifies "RoundedMplus1c" (Rounded M+ 1c) in Black / ExtraBold / Medium.
+   M PLUS Rounded 1c is the same typeface as published on Google Fonts; no local binaries were
+   supplied with the brand kit, so it is loaded from the Google CDN. Drop .woff2 files into
+   assets/fonts/ and replace this @import with @font-face rules if self-hosting is required. */
+@import url("https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap");

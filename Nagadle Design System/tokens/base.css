@@ -1,0 +1,27 @@
+/* Nagadle base layer — resets, defaults, and the two shared surface utilities. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-body);font-size:var(--size-body);font-weight:var(--weight-medium);line-height:var(--lh-body);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+h1,h2,h3,h4{margin:0;font-family:var(--font-display);font-weight:var(--weight-black);line-height:var(--lh-snug);letter-spacing:var(--tracking-display)}
+h1{font-size:var(--size-display)}
+h2{font-size:var(--size-heading)}
+h3,h4{font-size:var(--size-body-lg)}
+p{margin:0;max-width:var(--measure-copy)}
+a{color:var(--text-link);font-weight:var(--weight-extrabold);text-decoration-thickness:2px;text-underline-offset:3px}
+a:hover{color:var(--text-link-hover)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:var(--stroke-field) solid var(--focus-ring);outline-offset:2px}
+img{max-width:100%;display:block}
+
+/* type helpers */
+.ngd-wordmark{font-family:var(--font-display);font-weight:var(--weight-black);font-size:var(--size-wordmark);line-height:var(--lh-tight);letter-spacing:var(--tracking-wordmark)}
+.ngd-label{font-weight:var(--weight-extrabold);font-size:var(--size-label);letter-spacing:var(--tracking-label);text-transform:uppercase}
+.ngd-numeric{font-variant-numeric:tabular-nums lining-nums;font-weight:var(--weight-extrabold)}
+
+/* seigaiha wave pattern from the source kit — flat two-tone, never a gradient */
+.ngd-pattern{--wave:radial-gradient(circle at 50% 100%,transparent 0 27%,var(--pattern-ink) 27% 32%,transparent 32% 56%,var(--pattern-ink) 56% 61%,transparent 61% 85%,var(--pattern-ink) 85% 90%,transparent 90%);background-color:var(--pattern-bg);background-image:var(--wave),var(--wave);background-size:var(--pattern-cell) calc(var(--pattern-cell) / 2);background-position:0 0,calc(var(--pattern-cell) / 2) calc(var(--pattern-cell) / 4)}
+[data-pattern="red"]{--pattern-bg:var(--red-500);--pattern-ink:#E23B30}
+[data-pattern="moss"]{--pattern-bg:var(--moss-700);--pattern-ink:var(--moss-900)}
+[data-pattern="cream"]{--pattern-bg:var(--cream);--pattern-ink:var(--lime-200)}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}

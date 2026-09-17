@@ -1,0 +1,27 @@
+{
+  "name": "nagadle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "extract": "node scripts/extract-chat.mjs",
+    "seed": "node scripts/seed-supabase.mjs",
+    "seed:reset": "node scripts/seed-supabase.mjs --reset",
+    "seed:dry": "node scripts/seed-supabase.mjs --dry-run"
+  },
+  "dependencies": {
+    "@fontsource-variable/roboto": "^5.3.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.0"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

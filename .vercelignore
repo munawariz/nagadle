@@ -1,0 +1,10 @@
+# Private chat data and local tooling never leave this machine.
+raw_data/
+data/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+scripts/
+supabase/

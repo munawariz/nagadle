@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Private chat export and derived data
+raw_data/
+data/
+dist/

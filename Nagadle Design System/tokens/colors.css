@@ -1,0 +1,74 @@
+/* Nagadle colors — palette derived from the mascot (greens) over the source brand kit's
+   cream / cherry / yellow / black. Royal blue from the reference kit is replaced by lime. */
+:root{
+  /* base — greens (mascot) */
+  --lime-100:#F2F6DF;
+  --lime-200:#E6EEBE;
+  --lime-400:#CADC6F;
+  --lime-500:#BCD147; /* mascot body — primary brand green */
+  --lime-600:#A8BC3A;
+  --moss-700:#6E823B; /* mascot shell */
+  --moss-900:#494F21; /* mascot shell lines — active/inverted surfaces */
+  --moss-950:#2B3011;
+
+  /* base — carried over from the source kit */
+  --ink:#000000;
+  --cream:#FAFAED;      /* Vanilla cream */
+  --white:#FFFFFF;
+  --stone-300:#E2E2CF;
+  --stone-500:#74745F;
+  --red-500:#FF4E42;    /* Cherry Red */
+  --red-900:#832626;    /* Burgundy */
+  --yellow-500:#FFC024; /* Yellow Ramen */
+  --yellow-600:#E3A400;
+
+  /* semantic — text */
+  --text-body:var(--ink);
+  --text-strong:var(--ink);
+  --text-muted:var(--stone-500);
+  --text-inverse:var(--cream);
+  --text-accent:var(--moss-900);
+  --text-price:var(--red-500);
+  --text-error:var(--red-500);
+  --text-link:var(--moss-900);
+  --text-link-hover:var(--moss-700);
+
+  /* semantic — surfaces */
+  --surface-page:var(--cream);
+  --surface-card:var(--white);
+  --surface-card-active:var(--moss-900);
+  --surface-tile:var(--lime-100);
+  --surface-sunken:var(--lime-200);
+  --surface-inverse:var(--moss-950);
+
+  /* semantic — lines */
+  --border-strong:var(--ink);
+  --border-subtle:var(--stone-300);
+  --border-active:var(--moss-900);
+  --border-error:var(--red-500);
+  --focus-ring:var(--moss-900);
+
+  /* semantic — actions */
+  --action-primary:var(--lime-500);
+  --action-primary-hover:var(--lime-400);
+  --action-primary-press:var(--lime-600);
+  --action-primary-ink:var(--ink);
+  --action-danger:var(--red-500);
+  --action-danger-hover:#FF6B61;
+  --action-danger-press:var(--red-900);
+  --action-danger-ink:var(--white);
+  --action-warn:var(--yellow-500);
+  --action-warn-hover:#FFD05C;
+  --action-warn-press:var(--yellow-600);
+  --action-warn-ink:var(--ink);
+
+  /* semantic — quiz feedback (game-specific aliases) */
+  --state-correct:var(--lime-500);
+  --state-correct-ink:var(--ink);
+  --state-close:var(--yellow-500);
+  --state-close-ink:var(--ink);
+  --state-wrong:var(--red-500);
+  --state-wrong-ink:var(--white);
+  --state-empty:var(--white);
+  --state-locked:var(--moss-900);
+}

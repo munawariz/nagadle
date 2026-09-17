@@ -1,0 +1,20 @@
+/* App-level overrides and motion helpers, built on the design-system tokens. */
+/* App font: Roboto instead of the design system's M PLUS Rounded 1c. */
+:root {
+  --font-core: "Roboto Variable", Roboto, -apple-system, "Segoe UI", sans-serif;
+}
+
+#root { width: 100%; }
+
+@keyframes ngd-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ngd-pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+
+.ngd-enter { animation: ngd-enter var(--dur-slow) var(--ease-out) both; }
+.ngd-pop { animation: ngd-pop var(--dur-slow) var(--ease-pop) both; }

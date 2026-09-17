@@ -1,0 +1,30 @@
+<!-- @dsCard group="Components" viewport="700x560" name="Surfaces" subtitle="Card inactive vs active, mascot speech bubbles, wave pattern" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:20px}.row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:14px}.cap{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { Card, Button, Mascot, WavePattern, SpeechBubble } = window.NagadleDesignSystem_bb132e;
+const M = <Mascot src="../../assets/mascot-nagadle.png" size={110}/>;
+function Demo(){return <div className="col">
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px'}}>
+<Card media={M} title="Nagadle" description="Simple like the seawater, nothing more" meta="+120" action={<Button size="sm">Pick</Button>}/>
+<Card active media={M} title="Nagadle" description="Simple like the seawater, nothing more" meta="+120" action={<Button size="sm" variant="warn" icon="x">Undo</Button>}/>
+</div>
+<div className="row" style={{gap:32,alignItems:'flex-start'}}>
+<div style={{display:'flex',flexDirection:'column',width:300}}>
+<SpeechBubble tailOffset={34}><div style={{fontWeight:900,fontSize:22,lineHeight:1.2}}>Which of these is a real wave pattern?</div></SpeechBubble>
+<Mascot src="../../assets/mascot-nagadle.png" size={84} style={{marginTop:18,marginLeft:12}}/>
+</div>
+<div className="row" style={{gap:16,width:300,alignItems:'center'}}>
+<Mascot src="../../assets/mascot-nagadle.png" size={84}/>
+<SpeechBubble tail="left" tone="moss" tailOffset={22} style={{flex:1}}><div style={{fontWeight:900,fontSize:20}}>Clean sweep.</div></SpeechBubble>
+</div>
+</div>
+<div className="row" style={{gap:12}}><WavePattern height={64} style={{borderRadius:10,width:220}}/><WavePattern tone="red" height={64} style={{borderRadius:10,width:220}}/><WavePattern tone="moss" height={64} style={{borderRadius:10,width:180}}/></div>
+</div>}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

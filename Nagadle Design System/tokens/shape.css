@@ -1,0 +1,23 @@
+/* Nagadle shape — radii, strokes, shadows, and the seigaiha wave pattern geometry. */
+:root{
+  --radius-sm:6px;
+  --radius-md:10px;   /* cards, tiles */
+  --radius-lg:16px;   /* sheets, modals */
+  --radius-field:8px; /* inputs */
+  --radius-pill:999px;/* every button and link chip */
+
+  --stroke-hairline:1px;
+  --stroke-field:2px;   /* input borders, idle and active */
+  --stroke-tile:2px;    /* quiz tiles, step dots */
+  --stroke-heavy:3px;
+
+  --shadow-card:0 6px 18px rgba(73,79,33,0.10);
+  --shadow-card-hover:0 10px 26px rgba(73,79,33,0.16);
+  --shadow-sheet:0 -8px 28px rgba(73,79,33,0.14);
+  --shadow-none:none;
+
+  /* wave pattern (source kit "Pattern") */
+  --pattern-cell:72px;
+  --pattern-ink:var(--lime-600);
+  --pattern-bg:var(--lime-500);
+}
