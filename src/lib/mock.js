@@ -1,18 +1,18 @@
 // Dev-only stand-in for the Supabase functions: open the app with ?mock.
 import { todayKey } from './day.js';
 
-const MEMBERS = ['Akaza', 'Aldy', 'Alsani', 'Amru', 'Aria', 'Candra', 'Dafa Nurul Fauziansyah', 'Deka', 'Dery', 'Ganiya', 'Hariz', 'Hasbi', 'Ilham', 'Julianto', 'Rey', 'Rifki'];
+const MEMBERS = ['Adrian', 'Aldy', 'Alsani', 'Aria', 'Candra', 'Dafa Nurul Fauziansyah', 'Dery', 'Ganiya', 'Hariz', 'Hasbi', 'Ilham', 'Julianto', 'Rey', 'Rifki', 'Septian', 'Shaddam'];
 
 // Invented placeholder lines, not from the chat export.
 const ROUNDS = [
-  { text: 'mock message number one for the layout', answer: 'Amru' },
+  { text: 'mock message number one for the layout', answer: 'Shaddam' },
   { text: 'a slightly longer made-up line to see how the bubble wraps two rows', answer: 'Aria' },
   { text: 'short one ok', answer: 'Hariz' },
   {
     text: 'this placeholder is here to test a long message that runs over several lines so the smaller type size kicks in and the bubble grows taller',
     answer: 'Ganiya',
   },
-  { text: 'line one of a multi-line mock\nline two of it', answer: 'Deka' },
+  { text: 'line one of a multi-line mock\nline two of it', answer: 'Adrian' },
 ];
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));

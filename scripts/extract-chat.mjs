@@ -14,10 +14,12 @@ const SENDER_ALIASES = {
   '+62 851-6168-0373': 'Ilham',
   '+62 822-1161-7892': 'Candra',
   '~candra': 'Candra',
-  'Amru Bisnis': 'Amru',
+  'Amru': 'Shaddam',
+  'Amru Bisnis': 'Shaddam',
+  'Deka': 'Adrian',
   'munawariz': 'Hariz',
   'Ijul (Paninti)': 'Julianto',
-  'SiAk': 'Akaza',
+  'SiAk': 'Septian',
 };
 const displayName = (name) => SENDER_ALIASES[name] ?? name;
 
