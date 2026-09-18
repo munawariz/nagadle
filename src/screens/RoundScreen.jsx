@@ -61,6 +61,44 @@ function TriesRow({ wrong }) {
   );
 }
 
+// "<Media omitted>", "[location]", "This message was deleted" and the like read as notes, not text.
+const isNote = (text) => !text || /^(<[^>]+>|\[[\w ]+\]|This message was deleted|You deleted this message|Waiting for this message)$/.test(text);
+
+/* The chat messages that came right after the prompt, one more per wrong guess, in the
+   prompt's pixel bubble. The prompt sender's own messages sit on the right like the prompt;
+   someone else's sit on the left with a darker shadow. */
+function NextInChat({ hints }) {
+  if (!hints.length) return null;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <span className="ngd-label" style={{ color: 'var(--text-muted)' }}>New Message</span>
+      {hints.map((h) => (
+        <PixelBubble
+          key={h.sentAt + h.text}
+          className="ngd-enter"
+          accent={h.sameSender === false ? 'var(--moss-700)' : undefined}
+          tailX={h.sameSender === false ? '20px' : 'calc(100% - 48px)'}
+          tailFlip={h.sameSender !== false}
+          padding="var(--space-3) var(--space-4)"
+          style={{ alignSelf: h.sameSender === false ? 'flex-start' : 'flex-end', maxWidth: '85%', minWidth: 160 }}
+        >
+          <p
+            style={{
+              maxWidth: 'none', margin: 0, fontSize: 'var(--size-body)', lineHeight: 1.4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere',
+              ...(isNote(h.text) ? { fontStyle: 'italic', color: 'var(--text-muted)' } : { fontWeight: 'var(--weight-extrabold)', color: 'var(--text-strong)' }),
+            }}
+          >
+            {h.text || 'Empty message'}
+          </p>
+          <span className="ngd-numeric" style={{ display: 'block', marginTop: 'var(--space-1)', textAlign: 'right', fontSize: 'var(--size-label)', color: 'var(--text-muted)' }}>
+            {formatSentAt(h.sentAt)}
+          </span>
+        </PixelBubble>
+      ))}
+    </div>
+  );
+}
+
 function Reveal({ result }) {
   const { correct, answer, guesses, sentAt } = result;
   return (
@@ -84,7 +122,7 @@ function Reveal({ result }) {
   );
 }
 
-export function RoundScreen({ day, prompts, members, answers, tries, onAnswer, onWrongTry, onFinish, onHome }) {
+export function RoundScreen({ day, prompts, members, answers, tries, hints, onAnswer, onWrongTry, onFinish, onHome }) {
   const total = prompts.length;
   const firstOpen = prompts.findIndex((p) => !answers[p.slot]);
   // After a guess the same prompt stays up (with its reveal) until "Next".
@@ -93,6 +131,7 @@ export function RoundScreen({ day, prompts, members, answers, tries, onAnswer, o
   const prompt = prompts[index];
   const result = revealIndex != null ? answers[prompt.slot] : null;
   const wrong = tries[prompt.slot] ?? [];
+  const shownHints = hints[prompt.slot] ?? [];
 
   const [guess, setGuess] = React.useState('');
   const [error, setError] = React.useState('');
@@ -114,12 +153,12 @@ export function RoundScreen({ day, prompts, members, answers, tries, onAnswer, o
     setChecking(true);
     setError('');
     try {
-      const { correct, answer, sentAt } = await checkAnswer(day, prompt.slot, member, lastTry);
+      const { correct, answer, sentAt, next } = await checkAnswer(day, prompt.slot, member, shownHints.length, lastTry);
       if (correct || lastTry) {
         onAnswer(prompt.slot, { correct, answer, sentAt, guesses });
         setRevealIndex(index);
       } else {
-        onWrongTry(prompt.slot, guesses);
+        onWrongTry(prompt.slot, guesses, [...shownHints, ...next]);
         setGuess('');
         setError(`Not ${member}`);
       }
@@ -147,7 +186,7 @@ export function RoundScreen({ day, prompts, members, answers, tries, onAnswer, o
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-        <PixelBubble key={prompt.slot} className="ngd-enter" tailX="calc(50% - 44px)">
+        <PixelBubble key={prompt.slot} className="ngd-enter" tailX="calc(100% - 150px)">
           <p
             style={{
               maxWidth: 'none', margin: 0, fontWeight: 'var(--weight-black)', fontSize: promptSize(prompt.text),
@@ -157,8 +196,10 @@ export function RoundScreen({ day, prompts, members, answers, tries, onAnswer, o
             {prompt.text}
           </p>
         </PixelBubble>
-        <Mascot src={mascotUrl} size={150} bob alt="The turtle, reading the message" style={{ alignSelf: 'center', marginTop: 'var(--space-2)' }} />
+        <Mascot src={mascotUrl} size={150} bob alt="The turtle, reading the message" style={{ alignSelf: 'flex-end', marginTop: 'var(--space-2)' }} />
       </div>
+
+      <NextInChat hints={shownHints} />
 
       {result ? (
         <Reveal result={result} />

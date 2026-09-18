@@ -54,8 +54,8 @@ function useDailyPuzzle() {
     setState((s) => ({ ...s, entry: saveDay(s.day, { answers: { [slot]: result } }) }));
   }, []);
 
-  const recordTries = React.useCallback((slot, guesses) => {
-    setState((s) => ({ ...s, entry: saveDay(s.day, { tries: { [slot]: guesses } }) }));
+  const recordTries = React.useCallback((slot, guesses, hints) => {
+    setState((s) => ({ ...s, entry: saveDay(s.day, { tries: { [slot]: guesses }, hints: { [slot]: hints } }) }));
   }, []);
 
   return { ...state, reload: load, recordAnswer, recordTries };
@@ -111,6 +111,7 @@ export function App() {
         members={puzzle.members}
         answers={answers}
         tries={puzzle.entry.tries ?? {}}
+        hints={puzzle.entry.hints ?? {}}
         onAnswer={puzzle.recordAnswer}
         onWrongTry={puzzle.recordTries}
         onFinish={() => setView('result')}

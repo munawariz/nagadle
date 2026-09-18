@@ -29,10 +29,18 @@ export async function fetchMembers() {
   return rows.map((r) => r.name);
 }
 
-/** { correct, answer, sentAt } for one guess; answer/sentAt stay null on a wrong guess unless reveal is set. */
-export async function checkAnswer(day, slot, guess, reveal = false) {
-  const rows = await rpc('nagadle_check_answer', { p_day: day, p_slot: slot, p_guess: guess, p_reveal: reveal });
+/**
+ * { correct, answer, sentAt, next } for one guess. answer/sentAt stay null on a wrong guess
+ * unless reveal is set; a wrong guess instead gets `next`, the chat messages that follow the
+ * `shown` ones the player already has: [{ text, sentAt, sameSender }], two when the first is
+ * a media placeholder, empty past the end of the archive.
+ */
+export async function checkAnswer(day, slot, guess, shown, reveal = false) {
+  const rows = await rpc('nagadle_check_answer', {
+    p_day: day, p_slot: slot, p_guess: guess, p_reveal: reveal, p_shown: shown,
+  });
   if (!rows?.length) throw new Error('Round not found');
-  const { correct, answer, sent_at } = rows[0];
-  return { correct, answer, sentAt: sent_at };
+  const { correct, answer, sent_at, next_messages } = rows[0];
+  const next = (next_messages ?? []).map((m) => ({ text: m.text, sentAt: m.sent_at, sameSender: m.same_sender }));
+  return { correct, answer, sentAt: sent_at, next };
 }

@@ -36,11 +36,13 @@ const TAIL_W = TAIL[0].length * U;
 const TAIL_H = TAIL.length * U;
 const SHADOW = 2 * U;
 
-function PixelTail({ accent, ink, x }) {
+// flip: slant the tail the other way (straight edge on the right).
+function PixelTail({ accent, ink, x, flip }) {
   const cells = [];
   TAIL.forEach((row, rowIndex) => {
+    const pad = flip ? TAIL[0].length - row.length : 0;
     [...row].forEach((ch, colIndex) => {
-      cells.push({ x: colIndex * U, y: rowIndex * U, ch });
+      cells.push({ x: (pad + colIndex) * U, y: rowIndex * U, ch });
     });
   });
   return (
@@ -61,16 +63,20 @@ function PixelTail({ accent, ink, x }) {
   );
 }
 
-/** tailX: where the tail's tip sits, as a CSS length from the bubble's left edge. */
-export function PixelBubble({ children, accent = 'var(--lime-500)', ink = 'var(--moss-900)', tailX = '50%', style, ...rest }) {
+/** tailX: where the tail's left edge sits, as a CSS length from the bubble's left edge.
+    tailFlip mirrors the tail so it leans left instead of right. */
+export function PixelBubble({
+  children, accent = 'var(--lime-500)', ink = 'var(--moss-900)', tailX = '50%', tailFlip = false,
+  padding = 'var(--space-5) var(--space-6)', style, ...rest
+}) {
   const layer = { position: 'absolute', inset: 0 };
   return (
     <div style={{ position: 'relative', marginRight: SHADOW, marginBottom: TAIL_H, ...style }} {...rest}>
       <div aria-hidden="true" style={{ ...layer, transform: `translate(${SHADOW}px, ${SHADOW}px)`, background: accent, clipPath: OUTER }} />
       <div aria-hidden="true" style={{ ...layer, background: ink, clipPath: OUTER }} />
       <div aria-hidden="true" style={{ ...layer, background: 'var(--surface-card)', clipPath: INNER }} />
-      <PixelTail accent={accent} ink={ink} x={tailX} />
-      <div style={{ position: 'relative', padding: 'var(--space-5) var(--space-6)' }}>{children}</div>
+      <PixelTail accent={accent} ink={ink} x={tailX} flip={tailFlip} />
+      <div style={{ position: 'relative', padding }}>{children}</div>
     </div>
   );
 }

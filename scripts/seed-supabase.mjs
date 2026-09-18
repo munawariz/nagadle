@@ -25,7 +25,7 @@ if (!fs.existsSync(input)) {
   process.exit(1);
 }
 const { meta, messages } = JSON.parse(fs.readFileSync(input, 'utf8'));
-console.log(`Loaded ${messages.length} messages from ${meta.senders.length} senders`);
+console.log(`Loaded ${messages.length} messages (${meta.quizTotal} usable as prompts) from ${meta.senders.length} senders`);
 
 if (DRY_RUN) {
   console.log('Dry run, sample row:', toRow(messages[0], 1));
@@ -52,6 +52,7 @@ function toRow(m, memberId) {
     member_id: memberId,
     sent_at: m.timestamp + TIMEZONE_OFFSET,
     text: m.text,
+    quiz_eligible: m.quiz,
   };
 }
 

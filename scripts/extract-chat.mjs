@@ -1,4 +1,6 @@
 // Parses the WhatsApp export in raw_data/ into a sanitized data/messages.json.
+// Every message is kept (so the game can show what was said next); `quiz` marks the ones
+// that can be a daily prompt.
 // Usage: node scripts/extract-chat.mjs [input.txt] [output.json]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +18,7 @@ const SENDER_ALIASES = {
   '~candra': 'Candra',
   'Amru': 'Shaddam',
   'Amru Bisnis': 'Shaddam',
+  'Dafa Nurul Fauziansyah': 'Dafa',
   'Deka': 'Adrian',
   'munawariz': 'Hariz',
   'Ijul (Paninti)': 'Julianto',
@@ -38,6 +41,12 @@ const SKIP_PATTERNS = [
   /\.vcf \(file attached\)$/,
   /^You received a view once message\./,
 ];
+// Bodies that are stored as a placeholder instead of their text.
+const PLACEHOLDERS = [
+  [/^location: https:\/\/maps\.google\.com\//, '[location]'],
+  [/\.vcf \(file attached\)$/, '[contact card]'],
+];
+const CREDENTIAL = /(pass(word)?|pwd|token|secret|api[_ ]?key)\s*[:=]/i;
 const DROPPED_SENDERS = new Set(['Meta AI']);
 // Laughter-only once punctuation/emoji/spaces are gone: wkwk, wkwkkw, awokwok, wkwk ok...
 const isLaughOnly = (text) => {
@@ -120,49 +129,73 @@ for (const line of lines) {
   if (current) raw.push(current);
 }
 
-const stats = { parsed: raw.length, skipped: {} };
-const skip = (reason) => (stats.skipped[reason] = (stats.skipped[reason] ?? 0) + 1);
-const messages = [];
-for (const r of raw) {
-  const body = r.body.replace(/\s+$/, '');
-  if (DROPPED_SENDERS.has(displayName(r.sender))) { skip(`sender: ${r.sender}`); continue; }
-  if (SKIP_BODIES.has(body)) { skip(body); continue; }
-  if (SKIP_PATTERNS.some((p) => p.test(body))) { skip('attachment/location'); continue; }
-  if (body.startsWith('POLL:\n')) { skip('poll'); continue; }
-  if (hasMention(body)) { skip('mention'); continue; }
-
-  const msg = { id: messages.length + 1, sender: displayName(r.sender), timestamp: r.timestamp, text: sanitize(body) };
-  if (!msg.text) { skip('empty'); continue; }
-  if (isLaughOnly(msg.text)) { skip('laughter only'); continue; }
-  if (isEmojiOnly(msg.text)) { skip('emoji only'); continue; }
-  if (isReactionOnly(msg.text)) { skip('reaction only'); continue; }
-  if (!/[\p{L}\p{N}]/u.test(msg.text)) { skip('punctuation/symbols only'); continue; }
-  messages.push(msg);
+// Why a message can't be a quiz prompt, or null if it can.
+function promptBlocker(sender, body, text) {
+  if (DROPPED_SENDERS.has(sender)) return `sender: ${sender}`;
+  if (SKIP_BODIES.has(body)) return body;
+  if (SKIP_PATTERNS.some((p) => p.test(body))) return 'attachment/location';
+  if (body.startsWith('POLL:\n')) return 'poll';
+  if (hasMention(body)) return 'mention';
+  if (CREDENTIAL.test(body)) return 'credential';
+  if (!text) return 'empty';
+  if (isLaughOnly(text)) return 'laughter only';
+  if (isEmojiOnly(text)) return 'emoji only';
+  if (isReactionOnly(text)) return 'reaction only';
+  if (!/[\p{L}\p{N}]/u.test(text)) return 'punctuation/symbols only';
+  // Enough to guess from, short enough for the bubble.
+  const length = [...text].length;
+  if (length < 12) return 'under 12 characters';
+  if (length > 280) return 'over 280 characters';
+  if (text.split(/\s+/).length < 3) return 'under 3 words';
+  if (text.split('\n').length > 6) return 'over 6 lines';
+  // Nothing that is just a link or masked personal data.
+  if (/^https?:\/\/\S+$/.test(text)) return 'link only';
+  if (/\[(nomor|email)\]/.test(text)) return 'masked personal data';
+  return null;
 }
 
-// Second pass: drop messages that too many different people have sent.
+function toText(body) {
+  if (CREDENTIAL.test(body)) return '[hidden]';
+  const placeholder = PLACEHOLDERS.find(([p]) => p.test(body));
+  return placeholder ? placeholder[1] : sanitize(body);
+}
+
+const stats = { parsed: raw.length, notQuiz: {} };
+const exclude = (reason) => (stats.notQuiz[reason] = (stats.notQuiz[reason] ?? 0) + 1);
+const messages = raw.map((r, i) => {
+  const body = r.body.replace(/\s+$/, '');
+  const sender = displayName(r.sender);
+  const text = toText(body);
+  const reason = promptBlocker(sender, body, text);
+  if (reason) exclude(reason);
+  return { id: i + 1, sender, timestamp: r.timestamp, text, quiz: !reason };
+});
+
+// Second pass: texts that too many different people have sent are generic, not prompts.
 const sendersByText = new Map();
-for (const m of messages) {
+for (const m of messages.filter((m) => m.quiz)) {
   const key = normalizeForSharing(m.text);
   if (!sendersByText.has(key)) sendersByText.set(key, new Set());
   sendersByText.get(key).add(m.sender);
 }
-const droppedShared = new Map();
-const kept = messages.filter((m) => {
+const excludedShared = new Map();
+for (const m of messages.filter((m) => m.quiz)) {
   const key = normalizeForSharing(m.text);
-  if (sendersByText.get(key).size <= MAX_SHARED_SENDERS) return true;
-  droppedShared.set(key, (droppedShared.get(key) ?? 0) + 1);
-  skip(`sent by ${MAX_SHARED_SENDERS + 1}+ people`);
-  return false;
-});
-messages.length = 0;
-kept.forEach((m, i) => messages.push({ ...m, id: i + 1 }));
+  if (sendersByText.get(key).size <= MAX_SHARED_SENDERS) continue;
+  m.quiz = false;
+  excludedShared.set(key, (excludedShared.get(key) ?? 0) + 1);
+  exclude(`sent by ${MAX_SHARED_SENDERS + 1}+ people`);
+}
 
-const senderCounts = {};
-for (const m of messages) senderCounts[m.sender] = (senderCounts[m.sender] ?? 0) + 1;
-const senders = Object.entries(senderCounts)
-  .sort((a, b) => b[1] - a[1])
-  .map(([name, count]) => ({ name, count }));
+const senderCounts = new Map();
+for (const m of messages) {
+  const c = senderCounts.get(m.sender) ?? { name: m.sender, count: 0, quiz: 0 };
+  c.count += 1;
+  if (m.quiz) c.quiz += 1;
+  senderCounts.set(m.sender, c);
+}
+const senders = [...senderCounts.values()].sort((a, b) => b.quiz - a.quiz || b.count - a.count);
+const quizTotal = messages.filter((m) => m.quiz).length;
 
 const result = {
   meta: {
@@ -171,6 +204,7 @@ const result = {
     timezone: 'Asia/Jakarta (timestamps are local time as exported)',
     range: { from: messages[0]?.timestamp, to: messages.at(-1)?.timestamp },
     total: messages.length,
+    quizTotal,
     senders,
   },
   messages,
@@ -178,8 +212,8 @@ const result = {
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(result));
-console.log(`Wrote ${messages.length} messages to ${output}`);
+console.log(`Wrote ${messages.length} messages (${quizTotal} usable as prompts) to ${output}`);
 console.log(JSON.stringify(stats, null, 2));
-console.log(`Shared texts dropped: ${droppedShared.size}. Most common:`);
-console.log([...droppedShared].sort((a, b) => b[1] - a[1]).slice(0, 40).map(([t, n]) => `${t} ${n}`).join(' · '));
+console.log(`Shared texts excluded: ${excludedShared.size}. Most common:`);
+console.log([...excludedShared].sort((a, b) => b[1] - a[1]).slice(0, 40).map(([t, n]) => `${t} ${n}`).join(' · '));
 console.table(senders);

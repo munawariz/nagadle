@@ -24,6 +24,7 @@ function write(state) {
 
 /**
  * { prompts, tries: { [slot]: [wrong guess, ...] },
+ *   hints: { [slot]: [{ text, sentAt }, ...] },  // chat messages that followed, one per wrong guess
  *   answers: { [slot]: { correct, answer, sentAt, guesses: [...] } } } or null.
  * A slot lands in answers once it is solved or out of tries.
  */
@@ -33,12 +34,13 @@ export function loadDay(day) {
 
 export function saveDay(day, patch) {
   const state = read();
-  const current = state.days[day] ?? { prompts: [], answers: {}, tries: {} };
+  const current = state.days[day] ?? { prompts: [], answers: {}, tries: {}, hints: {} };
   state.days[day] = {
     ...current,
     ...patch,
     answers: { ...current.answers, ...patch.answers },
     tries: { ...current.tries, ...patch.tries },
+    hints: { ...current.hints, ...patch.hints },
   };
   write(state);
   return state.days[day];

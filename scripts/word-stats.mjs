@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const TOP = Number(process.argv[2] ?? 25);
-const { messages } = JSON.parse(fs.readFileSync(path.join(root, 'data', 'messages.json'), 'utf8'));
+const messages = JSON.parse(fs.readFileSync(path.join(root, 'data', 'messages.json'), 'utf8')).messages.filter((m) => m.quiz);
 
 const bump = (map, key) => map.set(key, (map.get(key) ?? 0) + 1);
 const top = (map, n) => [...map].sort((a, b) => b[1] - a[1]).slice(0, n);
