@@ -70,8 +70,7 @@ const isNote = (text) => !text || /^(<[^>]+>|\[[\w ]+\]|This message was deleted
 function NextInChat({ hints }) {
   if (!hints.length) return null;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-      <span className="ngd-label" style={{ color: 'var(--text-muted)' }}>New Message</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', paddingTop: 'var(--space-2)' }}>
       {hints.map((h) => (
         <PixelBubble
           key={h.sentAt + h.text}
@@ -133,6 +132,27 @@ export function RoundScreen({ day, prompts, members, answers, tries, hints, onAn
   const wrong = tries[prompt.slot] ?? [];
   const shownHints = hints[prompt.slot] ?? [];
 
+  // The chat area is exactly as tall as the prompt, the turtle and the "New Message" label, so
+  // those always fit on screen together; only the follow-up messages scroll inside it.
+  const chatRef = React.useRef(null);
+  const promptRef = React.useRef(null);
+  const [promptHeight, setPromptHeight] = React.useState(null);
+  React.useLayoutEffect(() => {
+    const el = promptRef.current;
+    const observer = new ResizeObserver(() => setPromptHeight(Math.ceil(el.getBoundingClientRect().height)));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  // Opening the quiz or moving to a new prompt starts at the top, even with messages already
+  // shown; only a message that arrives during play scrolls into view.
+  const seen = React.useRef({ slot: null, count: 0 });
+  React.useEffect(() => {
+    const el = chatRef.current;
+    const arrived = seen.current.slot === prompt.slot && shownHints.length > seen.current.count;
+    seen.current = { slot: prompt.slot, count: shownHints.length };
+    el.scrollTo(arrived ? { top: el.scrollHeight, behavior: 'smooth' } : { top: 0 });
+  }, [prompt.slot, shownHints.length]);
+
   const [guess, setGuess] = React.useState('');
   const [error, setError] = React.useState('');
   const [checking, setChecking] = React.useState(false);
@@ -185,21 +205,26 @@ export function RoundScreen({ day, prompts, members, answers, tries, hints, onAn
         <span className="ngd-label ngd-numeric" style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{index + 1} of {total}</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-        <PixelBubble key={prompt.slot} className="ngd-enter" tailX="calc(100% - 150px)">
-          <p
-            style={{
-              maxWidth: 'none', margin: 0, fontWeight: 'var(--weight-black)', fontSize: promptSize(prompt.text),
-              lineHeight: 1.3, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: 'var(--text-strong)',
-            }}
-          >
-            {prompt.text}
-          </p>
-        </PixelBubble>
-        <Mascot src={mascotUrl} size={150} bob alt="The turtle, reading the message" style={{ alignSelf: 'flex-end', marginTop: 'var(--space-2)' }} />
+      {/* Holds the height of the prompt and turtle; new chat messages scroll inside it. */}
+      <div ref={chatRef} style={{ height: promptHeight ?? 'auto', overflowX: 'hidden', overflowY: 'auto', overscrollBehavior: 'contain' }}>
+        <div ref={promptRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+          <PixelBubble key={prompt.slot} className="ngd-enter" tailX="calc(100% - 150px)" tailFlip>
+            <p
+              style={{
+                maxWidth: 'none', margin: 0, fontWeight: 'var(--weight-black)', fontSize: promptSize(prompt.text),
+                lineHeight: 1.3, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: 'var(--text-strong)',
+              }}
+            >
+              {prompt.text}
+            </p>
+          </PixelBubble>
+          <Mascot src={mascotUrl} size={150} bob alt="The turtle, reading the message" style={{ alignSelf: 'flex-end', marginTop: 'var(--space-2)' }} />
+          {shownHints.length ? (
+            <span className="ngd-label" style={{ color: 'var(--text-muted)', paddingTop: 'var(--space-4)' }}>New Message</span>
+          ) : null}
+        </div>
+        <NextInChat hints={shownHints} />
       </div>
-
-      <NextInChat hints={shownHints} />
 
       {result ? (
         <Reveal result={result} />
