@@ -5,6 +5,7 @@ import { Card } from '@ds/components/surfaces/Card.jsx';
 import { Icon } from '@ds/components/icon/Icon.jsx';
 import { Mascot } from '@ds/components/surfaces/Mascot.jsx';
 import { mascotUrl } from '../components/AppShell.jsx';
+import { BirthdayCheer } from '../components/BirthdayCheer.jsx';
 import { formatDay, msUntilNextDay, puzzleNumber } from '../lib/day.js';
 import { MAX_TRIES } from '../lib/progress.js';
 import { buildShareText } from '../lib/share.js';
@@ -101,13 +102,16 @@ function ShareCard({ text }) {
   );
 }
 
-export function ResultScreen({ day, prompts, answers, streak, onStats, onHome }) {
+export function ResultScreen({ day, prompts, answers, birthday, streak, onStats, onHome }) {
   const total = prompts.length;
   const score = prompts.filter((p) => answers[p.slot]?.correct).length;
   const shareText = buildShareText({ day, prompts, answers, streak, url: window.location.origin });
 
   return (
     <>
+      {/* Birthday easter egg: the whole day was one member's, so the result opens with them. */}
+      {birthday ? <BirthdayCheer name={birthday} /> : null}
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)' }}>
         <Mascot src={mascotUrl} size={120} alt="" className="ngd-pop" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>

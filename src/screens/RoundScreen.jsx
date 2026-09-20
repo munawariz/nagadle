@@ -173,9 +173,9 @@ export function RoundScreen({ day, prompts, members, answers, tries, hints, onAn
     setChecking(true);
     setError('');
     try {
-      const { correct, answer, sentAt, next } = await checkAnswer(day, prompt.slot, member, shownHints.length, lastTry);
+      const { correct, answer, sentAt, next, birthday } = await checkAnswer(day, prompt.slot, member, shownHints.length, lastTry);
       if (correct || lastTry) {
-        onAnswer(prompt.slot, { correct, answer, sentAt, guesses });
+        onAnswer(prompt.slot, { correct, answer, sentAt, guesses }, birthday);
         setRevealIndex(index);
       } else {
         onWrongTry(prompt.slot, guesses, [...shownHints, ...next]);

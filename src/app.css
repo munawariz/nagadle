@@ -18,3 +18,59 @@
 
 .ngd-enter { animation: ngd-enter var(--dur-slow) var(--ease-out) both; }
 .ngd-pop { animation: ngd-pop var(--dur-slow) var(--ease-pop) both; }
+
+/* Birthday easter egg: the name lands with a bounce, once. */
+@keyframes ngd-birthday {
+  0%   { opacity: 0; transform: scale(0.6) rotate(-6deg); }
+  60%  { opacity: 1; transform: scale(1.12) rotate(2deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+.ngd-birthday-name {
+  display: inline-block;
+  transform-origin: center;
+  animation: ngd-birthday 620ms var(--ease-pop) 120ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ngd-birthday-name { animation: none; }
+}
+
+/* Birthday card: lifts under the pointer, dips when pressed — it throws confetti on click. */
+.ngd-cheer {
+  /* It is one big click target, so spam-tapping must not select the text or flash a
+     highlight, and the turtle must not turn into a drag ghost. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.ngd-cheer:hover {
+  transform: translateY(-3px) scale(1.01) rotate(-0.4deg);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ngd-cheer:active {
+  transform: translateY(0) scale(0.985);
+  box-shadow: var(--shadow-card);
+  transition-duration: var(--dur-instant);
+}
+
+/* The turtle leans in with the card. */
+.ngd-cheer:hover .ngd-cheer-mascot { transform: scale(1.06) rotate(3deg); }
+.ngd-cheer:active .ngd-cheer-mascot { transform: scale(0.97); }
+.ngd-cheer-mascot { transition: transform var(--dur) var(--ease-pop); }
+
+/* The click belongs to the card; the image never takes it, so it cannot be dragged out. */
+.ngd-cheer img { pointer-events: none; -webkit-user-drag: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ngd-cheer, .ngd-cheer:hover, .ngd-cheer:active,
+  .ngd-cheer-mascot, .ngd-cheer:hover .ngd-cheer-mascot, .ngd-cheer:active .ngd-cheer-mascot {
+    transform: none;
+    transition: box-shadow var(--dur) var(--ease-out);
+  }
+}

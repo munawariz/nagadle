@@ -50,8 +50,13 @@ function useDailyPuzzle() {
 
   React.useEffect(() => { load(); }, [load]);
 
-  const recordAnswer = React.useCallback((slot, result) => {
-    setState((s) => ({ ...s, entry: saveDay(s.day, { answers: { [slot]: result } }) }));
+  const recordAnswer = React.useCallback((slot, result, birthday) => {
+    setState((s) => ({
+      ...s,
+      // birthday only arrives on days that are one member's; it stays on the entry so the
+      // celebration is still there when the player comes back to the result later.
+      entry: saveDay(s.day, { answers: { [slot]: result }, ...(birthday ? { birthday } : {}) }),
+    }));
   }, []);
 
   const recordTries = React.useCallback((slot, guesses, hints) => {
@@ -124,6 +129,7 @@ export function App() {
         day={puzzle.day}
         prompts={puzzle.entry.prompts}
         answers={answers}
+        birthday={puzzle.entry.birthday ?? null}
         streak={stats.streak}
         onStats={() => setView('stats')}
         onHome={() => setView('home')}

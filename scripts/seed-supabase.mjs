@@ -1,12 +1,15 @@
 // Seeds data/messages.json into Supabase (run the migration in supabase/migrations first).
+// Birthdays ride along from data/birthdays.json; "npm run seed:birthdays" writes just those.
 // Usage: npm run seed [-- --reset] [-- --dry-run]
 //   --reset    truncate members/messages before loading (use after a fresh export)
 //   --dry-run  build the rows and print a summary without touching the database
 import fs from 'node:fs';
 import path from 'node:path';
+import { readBirthdays } from './birthdays.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const input = path.join(root, 'data', 'messages.json');
+const birthdaysFile = path.join(root, 'data', 'birthdays.json');
 const args = new Set(process.argv.slice(2));
 const RESET = args.has('--reset');
 const DRY_RUN = args.has('--dry-run');
@@ -71,17 +74,18 @@ if (RESET) {
   console.log('Archive truncated');
 }
 
+// data/birthdays.json is the source of truth for the birthday easter egg: a name missing
+// from it (or with a null birthday) has its stored birthday cleared.
+const birthdays = readBirthdays(birthdaysFile, meta.senders.map((sender) => sender.name));
+const memberRows = meta.senders.map((s) =>
+  birthdays ? { name: s.name, birthday: birthdays.get(s.name) ?? null } : { name: s.name },
+);
 const members = await withRetry('members', () =>
-  supabase
-    .from('nagadle_members')
-    .upsert(
-      meta.senders.map((s) => ({ name: s.name })),
-      { onConflict: 'name' },
-    )
-    .select('id, name'),
+  supabase.from('nagadle_members').upsert(memberRows, { onConflict: 'name' }).select('id, name'),
 );
 const memberIds = new Map(members.map((m) => [m.name, m.id]));
 console.log(`Upserted ${members.length} members`);
+if (birthdays) console.log(`Set ${memberRows.filter((m) => m.birthday).length} birthdays`);
 
 const batches = [];
 for (let i = 0; i < messages.length; i += BATCH_SIZE) batches.push(messages.slice(i, i + BATCH_SIZE));

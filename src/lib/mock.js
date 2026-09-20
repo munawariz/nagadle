@@ -27,6 +27,11 @@ const ROUNDS = [
 
 const MEDIA = new Set(['<Media omitted>', '<Video note omitted>']);
 
+// ?mock&birthday=Aria makes every round that member's, the way the SQL picker does on a
+// real birthday, so the celebration screen can be worked on without touching the database.
+const BIRTHDAY = new URLSearchParams(window.location.search).get('birthday');
+const senderOf = (round) => (BIRTHDAY ? MEMBERS.find((m) => m.toLowerCase() === BIRTHDAY.toLowerCase()) ?? BIRTHDAY : round.answer);
+
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function rpc(fn, args) {
@@ -35,7 +40,8 @@ export async function rpc(fn, args) {
   if (fn === 'nagadle_get_daily') return ROUNDS.map((r, i) => ({ day: todayKey(), slot: i + 1, text: r.text }));
   if (fn === 'nagadle_check_answer') {
     const round = ROUNDS[args.p_slot - 1];
-    const correct = round.answer.toLowerCase() === args.p_guess.trim().toLowerCase();
+    const answer = senderOf(round);
+    const correct = answer.toLowerCase() === args.p_guess.trim().toLowerCase();
     const show = correct || args.p_reveal;
     // Same rule as the SQL: the next message, plus one more when it is a media placeholder.
     const start = Math.min(Math.max(args.p_shown, 0), 2);
@@ -43,7 +49,8 @@ export async function rpc(fn, args) {
     const next = [first, MEDIA.has(first?.[0]) && second].filter(Boolean);
     return [{
       correct,
-      answer: show ? round.answer : null,
+      answer: show ? answer : null,
+      birthday: show && BIRTHDAY ? answer : null,
       sent_at: show ? '2023-03-12T14:04:00Z' : null,
       next_messages: show ? null : next.map(([text, same], i) => ({
         text, sent_at: `2023-03-12T14:${String(5 + start + i).padStart(2, '0')}:00Z`, same_sender: same,
